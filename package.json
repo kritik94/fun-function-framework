@@ -1,0 +1,15 @@
+{
+  "name": "projects",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "imports": {
+    "#dep": {
+      "node": "dep-node-navite"
+    }
+  },
+  "devDependencies": {
+    "eslint": "^7.25.0"
+  }
+}
