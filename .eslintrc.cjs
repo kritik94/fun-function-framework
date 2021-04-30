@@ -1,9 +1,9 @@
-module.exports = {
+export default {
   "env": {
       "es2021": true
   },
   "extends": [
-      "eslint:recommended",
+      "eslint:recommended"
   ],
   "parserOptions": {
       "ecmaVersion": 12,
@@ -12,6 +12,8 @@ module.exports = {
   "plugins": [
   ],
   "rules": {
-    "semi": "never"
+    "semi": "off"
   }
-};
+}
+
+

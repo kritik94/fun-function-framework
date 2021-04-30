@@ -1,30 +1,52 @@
 import http from 'node:http'
+import { watch, stat } from 'node:fs/promises'
+import process from 'node:process'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { nanoid } from 'nanoid'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// import('../app/handlers/index.js')
+//   .then(module => console.log(module))
 
 const ctx = {
   port: 1337,
   host: 'localhost',
-};
+  handlers: []
+}
 
-const handlers = [
-  {
-    pattern: '/',
-    handler: function getIndex() {
-      return {
-        status: 200,
-        body: "Hello, world!",
-      }
-    },
-  },
-  {
-    pattern: /^\/(?<name>\w+)/,
-    handler: function getIndexWithName(_, {name}) {
-      return {
-        status: 200,
-        body: `Hello, ${name}!`,
-      }
+function runAsync(fn) {
+  (async () => {
+    try {
+      await fn()
+    } catch (err) {
+      console.log(err)
     }
-  },
-]
+  })()
+}
+
+runAsync(async () => {
+  const filepath = `${__dirname}/../app/handlers/index.js`
+  const hashed = (path) => `${path}?h=${nanoid(6)}`
+
+  ctx.handlers = (await import(hashed(filepath))).default
+
+  const watcher = watch(filepath)
+  console.log(`start watch ${filepath}`)
+
+  for await (const event of watcher) {
+    console.log(event)
+    try {
+      ctx.handlers = (await import(hashed(filepath))).default
+      console.log(ctx)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+})
+
+
 
 function bodyReader(request) {
   return new Promise((resolve) => {
@@ -108,7 +130,7 @@ const server = http.createServer((req, res) => {
     const request = requestToMap(req)
     console.log(request)
 
-    const {handler, params} = matchHandler(handlers, request)
+    const {handler, params} = matchHandler(ctx.handlers, request)
     const response = handler(request, params)
 
     console.log(response)
